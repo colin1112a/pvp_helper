@@ -245,7 +245,11 @@ public final class ArrowPrediction {
     }
 
     private static boolean isInWater(World world, Vec3d position) {
-        BlockPos pos = BlockPos.ofFloored(position);
+        BlockPos pos = new BlockPos(
+                (int) Math.floor(position.x),
+                (int) Math.floor(position.y),
+                (int) Math.floor(position.z)
+        );
         return world.getFluidState(pos).isIn(FluidTags.WATER);
     }
 }
