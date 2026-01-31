@@ -1,0 +1,6 @@
+{
+  "key.categories.pvp_helper": "PvP Helper",
+  "key.pvp_helper.highlight": "Highlight players (Tab / Shift+Tab)",
+  "text.pvp_helper.arrow_warning": "Warning: incoming arrow may hit a player!",
+  "text.pvp_helper.arrow_warning_target": "Warning: arrow may hit %s!"
+}

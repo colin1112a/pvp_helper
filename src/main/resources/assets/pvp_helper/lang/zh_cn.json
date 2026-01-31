@@ -1,0 +1,6 @@
+{
+  "key.categories.pvp_helper": "PVP辅助",
+  "key.pvp_helper.highlight": "玩家高亮 (Tab / Shift+Tab)",
+  "text.pvp_helper.arrow_warning": "警告：来袭弓箭可能命中玩家！",
+  "text.pvp_helper.arrow_warning_target": "警告：弓箭可能命中 %s！"
+}
