@@ -16,8 +16,10 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.registry.tag.FluidTags;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 
@@ -28,7 +30,8 @@ import java.util.Map;
 import java.util.Set;
 
 public final class ArrowPrediction {
-    private static final double DRAG = 0.99;
+    private static final double AIR_DRAG = 0.99;
+    private static final double WATER_DRAG = 0.6;
     private static final double GRAVITY = 0.05;
     private static final int MAX_STEPS = 200;
     private static final double PLAYER_HITBOX_EXPAND = 0.3;
@@ -182,7 +185,8 @@ public final class ArrowPrediction {
             }
 
             position = next;
-            motion = motion.multiply(DRAG).add(0.0, -GRAVITY, 0.0);
+            double drag = isInWater(world, position) ? WATER_DRAG : AIR_DRAG;
+            motion = motion.multiply(drag).add(0.0, -GRAVITY, 0.0);
 
             if (position.y < world.getBottomY() - 10) {
                 break;
@@ -238,5 +242,10 @@ public final class ArrowPrediction {
     }
 
     private record PredictionResult(Vec3d position, boolean hitPlayer, String playerName) {
+    }
+
+    private static boolean isInWater(World world, Vec3d position) {
+        BlockPos pos = BlockPos.ofFloored(position);
+        return world.getFluidState(pos).isIn(FluidTags.WATER);
     }
 }
