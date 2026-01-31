@@ -1,6 +1,20 @@
 {
   "key.categories.pvp_helper": "PvP Helper",
   "key.pvp_helper.highlight": "Highlight players (Tab / Shift+Tab)",
+  "text.pvp_helper.config.title": "PvP Helper Config",
+  "config.pvp_helper.highlight_enabled": "Highlight players",
+  "config.pvp_helper.persistent_enabled": "Persistent highlight",
+  "config.pvp_helper.arrow_prediction_enabled": "Arrow landing prediction",
+  "config.pvp_helper.arrow_warning_enabled": "Arrow hit warning",
+  "config.pvp_helper.aim_prediction_enabled": "Aim prediction",
+  "config.pvp_helper.hud_enabled": "HUD enabled",
+  "config.pvp_helper.hud_show_counts": "HUD arrow counts",
+  "config.pvp_helper.hud_show_aim": "HUD aim info",
+  "config.pvp_helper.hud_x": "HUD X",
+  "config.pvp_helper.hud_y": "HUD Y",
+  "hud.pvp_helper.arrow_counts": "Arrows: %s  Hits: %s",
+  "hud.pvp_helper.aim_info": "Aim: %s blocks, %s s",
+  "hud.pvp_helper.aim_none": "Aim: --",
   "text.pvp_helper.arrow_warning": "Warning: incoming arrow may hit a player!",
   "text.pvp_helper.arrow_warning_target": "Warning: arrow may hit %s!"
 }

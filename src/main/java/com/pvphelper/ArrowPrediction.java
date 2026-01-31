@@ -40,6 +40,7 @@ public final class ArrowPrediction {
     private static final Map<Integer, PredictionResult> ARROW_PREDICTIONS = new HashMap<>();
     private static final Set<Integer> WARNED_ARROWS = new HashSet<>();
     private static PredictionResult aimPrediction;
+    private static HudSnapshot hudSnapshot = new HudSnapshot(0, 0, null, 0);
 
     private ArrowPrediction() {
     }
@@ -49,16 +50,29 @@ public final class ArrowPrediction {
             return;
         }
 
+        PvpHelperConfig config = ConfigManager.get();
+        boolean computeArrows = config.arrowPredictionEnabled || config.arrowWarningEnabled || config.hudEnabled;
         World world = client.world;
         ARROW_PREDICTIONS.clear();
         Set<Integer> seenArrows = new HashSet<>();
+        int hitCount = 0;
 
-        Box searchBox = client.player.getBoundingBox().expand(SEARCH_RADIUS);
-        List<PersistentProjectileEntity> arrows = world.getEntitiesByClass(
-                PersistentProjectileEntity.class,
-                searchBox,
-                entity -> entity.getType() == EntityType.ARROW || entity.getType() == EntityType.SPECTRAL_ARROW
-        );
+        if (!computeArrows && !config.aimPredictionEnabled) {
+            WARNED_ARROWS.clear();
+            aimPrediction = null;
+            hudSnapshot = new HudSnapshot(0, 0, null, 0);
+            return;
+        }
+
+        List<PersistentProjectileEntity> arrows = List.of();
+        if (computeArrows) {
+            Box searchBox = client.player.getBoundingBox().expand(SEARCH_RADIUS);
+            arrows = world.getEntitiesByClass(
+                    PersistentProjectileEntity.class,
+                    searchBox,
+                    entity -> entity.getType() == EntityType.ARROW || entity.getType() == EntityType.SPECTRAL_ARROW
+            );
+        }
 
         for (PersistentProjectileEntity arrow : arrows) {
             if (arrow.isRemoved()) {
@@ -73,16 +87,26 @@ public final class ArrowPrediction {
             ARROW_PREDICTIONS.put(arrow.getId(), result);
             seenArrows.add(arrow.getId());
 
-            if (result.hitPlayer() && WARNED_ARROWS.add(arrow.getId())) {
-                sendWarning(client, result);
+            if (result.hitPlayer()) {
+                hitCount++;
+                if (config.arrowWarningEnabled && WARNED_ARROWS.add(arrow.getId())) {
+                    sendWarning(client, result);
+                }
             }
         }
 
         WARNED_ARROWS.retainAll(seenArrows);
-        aimPrediction = computeAimPrediction(client);
+        aimPrediction = config.aimPredictionEnabled ? computeAimPrediction(client) : null;
+        hudSnapshot = new HudSnapshot(ARROW_PREDICTIONS.size(), hitCount,
+                aimPrediction == null ? null : aimPrediction.position(),
+                aimPrediction == null ? 0 : aimPrediction.steps());
     }
 
     public static void render(WorldRenderContext context) {
+        PvpHelperConfig config = ConfigManager.get();
+        if (!config.arrowPredictionEnabled && !config.arrowWarningEnabled && !config.aimPredictionEnabled) {
+            return;
+        }
         if (ARROW_PREDICTIONS.isEmpty() && aimPrediction == null) {
             return;
         }
@@ -94,18 +118,20 @@ public final class ArrowPrediction {
 
         VertexConsumerProvider consumers = context.consumers();
 
-        for (PredictionResult result : ARROW_PREDICTIONS.values()) {
-            if (result == null) {
-                continue;
-            }
-            if (result.hitPlayer()) {
-                drawMarker(matrices, consumers, result.position(), 1.0f, 0.2f, 0.2f, 0.9f, 0.4);
-            } else {
-                drawMarker(matrices, consumers, result.position(), 1.0f, 0.85f, 0.2f, 0.7f, 0.35);
+        if (config.arrowPredictionEnabled || config.arrowWarningEnabled) {
+            for (PredictionResult result : ARROW_PREDICTIONS.values()) {
+                if (result == null) {
+                    continue;
+                }
+                if (result.hitPlayer()) {
+                    drawMarker(matrices, consumers, result.position(), 1.0f, 0.2f, 0.2f, 0.9f, 0.4);
+                } else if (config.arrowPredictionEnabled) {
+                    drawMarker(matrices, consumers, result.position(), 1.0f, 0.85f, 0.2f, 0.7f, 0.35);
+                }
             }
         }
 
-        if (aimPrediction != null) {
+        if (config.aimPredictionEnabled && aimPrediction != null) {
             drawMarker(matrices, consumers, aimPrediction.position(), 0.2f, 0.9f, 1.0f, 0.8f, 0.45);
         }
 
@@ -175,13 +201,13 @@ public final class ArrowPrediction {
             if (blockHit.getType() != HitResult.Type.MISS) {
                 double blockDistance = position.distanceTo(blockHit.getPos());
                 if (closestHit != null && closestDistance <= blockDistance) {
-                    return new PredictionResult(closestHit, true, hitName);
+                    return new PredictionResult(closestHit, true, hitName, step);
                 }
-                return new PredictionResult(blockHit.getPos(), false, null);
+                return new PredictionResult(blockHit.getPos(), false, null, step);
             }
 
             if (closestHit != null) {
-                return new PredictionResult(closestHit, true, hitName);
+                return new PredictionResult(closestHit, true, hitName, step);
             }
 
             position = next;
@@ -193,7 +219,7 @@ public final class ArrowPrediction {
             }
         }
 
-        return new PredictionResult(position, false, null);
+        return new PredictionResult(position, false, null, MAX_STEPS);
     }
 
     private static void sendWarning(MinecraftClient client, PredictionResult result) {
@@ -241,7 +267,14 @@ public final class ArrowPrediction {
         );
     }
 
-    private record PredictionResult(Vec3d position, boolean hitPlayer, String playerName) {
+    public static HudSnapshot getHudSnapshot() {
+        return hudSnapshot;
+    }
+
+    private record PredictionResult(Vec3d position, boolean hitPlayer, String playerName, int steps) {
+    }
+
+    public record HudSnapshot(int arrowCount, int hitCount, Vec3d aimPosition, int aimTicks) {
     }
 
     private static boolean isInWater(World world, Vec3d position) {

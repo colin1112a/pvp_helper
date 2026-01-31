@@ -10,6 +10,9 @@
   "entrypoints": {
     "client": [
       "com.pvphelper.PvpHelperClient"
+    ],
+    "modmenu": [
+      "com.pvphelper.PvpHelperModMenu"
     ]
   },
   "depends": {

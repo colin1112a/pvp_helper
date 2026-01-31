@@ -3,6 +3,7 @@ package com.pvphelper;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
@@ -24,9 +25,11 @@ public final class PvpHelperClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         KeyBindingHelper.registerKeyBinding(HIGHLIGHT_KEY);
+        ConfigManager.load();
 
         ClientTickEvents.END_CLIENT_TICK.register(PvpHelperClient::onEndClientTick);
         WorldRenderEvents.LAST.register(ArrowPrediction::render);
+        HudRenderCallback.EVENT.register(HudOverlay::render);
     }
 
     private static void onEndClientTick(MinecraftClient client) {
@@ -34,14 +37,16 @@ public final class PvpHelperClient implements ClientModInitializer {
             return;
         }
 
+        PvpHelperConfig config = ConfigManager.get();
         boolean shiftDown = isShiftDown(client);
         while (HIGHLIGHT_KEY.wasPressed()) {
-            if (shiftDown) {
+            if (shiftDown && config.persistentHighlightEnabled) {
                 persistentHighlight = !persistentHighlight;
             }
         }
 
-        boolean highlightActive = HIGHLIGHT_KEY.isPressed() || persistentHighlight;
+        boolean highlightActive = config.highlightEnabled
+                && (HIGHLIGHT_KEY.isPressed() || (persistentHighlight && config.persistentHighlightEnabled));
         HighlightManager.update(client, highlightActive);
         ArrowPrediction.update(client);
     }

@@ -1,6 +1,20 @@
 {
   "key.categories.pvp_helper": "PVP辅助",
   "key.pvp_helper.highlight": "玩家高亮 (Tab / Shift+Tab)",
+  "text.pvp_helper.config.title": "PVP辅助设置",
+  "config.pvp_helper.highlight_enabled": "玩家高亮",
+  "config.pvp_helper.persistent_enabled": "持续高亮",
+  "config.pvp_helper.arrow_prediction_enabled": "弓箭落点预测",
+  "config.pvp_helper.arrow_warning_enabled": "弓箭命中预警",
+  "config.pvp_helper.aim_prediction_enabled": "瞄准落点预测",
+  "config.pvp_helper.hud_enabled": "HUD显示",
+  "config.pvp_helper.hud_show_counts": "HUD显示箭矢统计",
+  "config.pvp_helper.hud_show_aim": "HUD显示瞄准信息",
+  "config.pvp_helper.hud_x": "HUD X",
+  "config.pvp_helper.hud_y": "HUD Y",
+  "hud.pvp_helper.arrow_counts": "箭矢: %s  命中: %s",
+  "hud.pvp_helper.aim_info": "落点: %s 格, %s 秒",
+  "hud.pvp_helper.aim_none": "落点: --",
   "text.pvp_helper.arrow_warning": "警告：来袭弓箭可能命中玩家！",
   "text.pvp_helper.arrow_warning_target": "警告：弓箭可能命中 %s！"
 }
